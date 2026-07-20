@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/heybadrinath/arrival-atlas/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/heybadrinath/arrival-atlas/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/heybadrinath/arrival-atlas?display_name=tag)](https://github.com/heybadrinath/arrival-atlas/releases/latest)
-[![Production deployment](https://img.shields.io/badge/deployment-Vercel-000000?logo=vercel)](https://github.com/heybadrinath/arrival-atlas/deployments)
+[![Production deployment](https://img.shields.io/badge/deployment-Vercel-000000?logo=vercel)](https://arrival-atlas.vercel.app)
 [![MIT License](https://img.shields.io/badge/license-MIT-0f766e)](LICENSE)
 
 [Explore the live product](https://arrival-atlas.vercel.app) · [View releases](https://github.com/heybadrinath/arrival-atlas/releases) · [Browse the public dataset](https://github.com/heybadrinath/arrival-atlas-data) · [Read the methodology](https://arrival-atlas.vercel.app/methodology) · [Contribute](CONTRIBUTING.md)
@@ -99,11 +99,11 @@ See [the detailed architecture](docs/ARCHITECTURE.md) and [deployment notes](doc
 
 Source releases and production deployments are deliberately separate, visible histories:
 
-| History                | What it records                                 | Where to inspect                                                                |
-| ---------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------- |
-| GitHub Releases        | Versioned, documented source milestones         | [Latest release](https://github.com/heybadrinath/arrival-atlas/releases/latest) |
-| GitHub Deployments     | Vercel deployment status for an exact commit    | [Deployment history](https://github.com/heybadrinath/arrival-atlas/deployments) |
-| Production application | The current deployment behind the canonical URL | [arrival-atlas.vercel.app](https://arrival-atlas.vercel.app)                    |
+| History                  | What it records                                 | Where to inspect                                                                   |
+| ------------------------ | ----------------------------------------------- | ---------------------------------------------------------------------------------- |
+| GitHub Releases          | Versioned, documented source milestones         | [Latest release](https://github.com/heybadrinath/arrival-atlas/releases/latest)    |
+| Commit deployment status | Vercel status attached to each source commit    | [`main` commit checks](https://github.com/heybadrinath/arrival-atlas/commits/main) |
+| Production application   | The current deployment behind the canonical URL | [arrival-atlas.vercel.app](https://arrival-atlas.vercel.app)                       |
 
 Every push to `main` is deployed by the existing Vercel Git integration. A semantic version tag
 such as `v0.1.0` runs [the release workflow](.github/workflows/release.yml), which validates the

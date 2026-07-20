@@ -24,8 +24,8 @@ requires a checked-in notes file at `docs/releases/<tag>.md`.
    `docs/releases/<tag>.md` in one focused change.
 2. Push the change to `main` and wait for both jobs in
    [CI](https://github.com/heybadrinath/arrival-atlas/actions/workflows/ci.yml) to pass.
-3. Confirm the matching commit has a successful entry in
-   [GitHub Deployments](https://github.com/heybadrinath/arrival-atlas/deployments) and verify the
+3. Confirm Vercel reports success on the matching
+   [GitHub commit](https://github.com/heybadrinath/arrival-atlas/commits/main) and verify the
    [production application](https://arrival-atlas.vercel.app).
 4. Create and push an annotated tag:
 

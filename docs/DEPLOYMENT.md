@@ -61,10 +61,10 @@ undesirable. CI should pin an exact CLI version if a CLI-driven deployment is ev
 ## Deployment and release visibility
 
 The linked Vercel project is the only production deployment pipeline. Pushes to `main` create a
-Vercel deployment, attach its status to the commit, and record it in
-[GitHub Deployments](https://github.com/heybadrinath/arrival-atlas/deployments). Do not add a
-second GitHub Actions deployment job while the Git integration is active; it would create
-duplicate builds and require unnecessary Vercel credentials.
+Vercel deployment and attach its status to the corresponding
+[GitHub commit](https://github.com/heybadrinath/arrival-atlas/commits/main). Do not add a second
+GitHub Actions deployment job while the Git integration is active; it would create duplicate
+builds and require unnecessary Vercel credentials.
 
 Next.js proxies `/data/:path*` to the public aggregate repository. Keep
 `NEXT_PUBLIC_DATA_BASE_URL=/data` in Vercel so browsers use the application origin and Vercel

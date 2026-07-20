@@ -6,6 +6,10 @@ All notable user-visible changes to Arrival Atlas are recorded here. The project
 
 ## [Unreleased]
 
+### Fixed
+
+- Deployment references now point to public commit checks and the live application
+
 ## [0.1.0] - 2026-07-20
 
 ### Added
