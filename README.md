@@ -1,6 +1,10 @@
 # Arrival Atlas
 
-[Live application](https://arrival-atlas.vercel.app) · [Public dataset](https://github.com/heybadrinath/arrival-atlas-data) · [Methodology](https://arrival-atlas.vercel.app/methodology)
+[![CI](https://github.com/heybadrinath/arrival-atlas/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/heybadrinath/arrival-atlas/actions/workflows/ci.yml)
+[![Live application](https://img.shields.io/badge/live-arrival--atlas.vercel.app-ef6f61)](https://arrival-atlas.vercel.app)
+[![MIT License](https://img.shields.io/badge/license-MIT-0f766e)](LICENSE)
+
+[Explore the live product](https://arrival-atlas.vercel.app) · [Browse the public dataset](https://github.com/heybadrinath/arrival-atlas-data) · [Read the methodology](https://arrival-atlas.vercel.app/methodology) · [Contribute](CONTRIBUTING.md)
 
 Arrival Atlas is a public, historical flight-reliability explorer for US domestic routes. It
 helps a traveler compare the airlines that actually served a route in the same calendar month
@@ -23,7 +27,26 @@ The product answers questions such as:
 It does not forecast a specific flight. Current weather, schedules, staffing, and operations can
 make a future trip differ materially from the historical record.
 
-## Production snapshot
+## What you can explore
+
+- Search airports by code or city with keyboard-friendly selectors, swap route endpoints, and
+  filter by calendar month and scheduled departure time
+- Reopen recent routes and copy a stable link to any route comparison
+- Compare scheduled flights, observation counts, on-time and cancellation rates, median, P75,
+  P90, and severe-delay rates across airlines that actually served the route
+- Review a deterministic plain-language summary and the same month versus the prior year
+- Inspect monthly reliability, delay distribution, time-band, delay-cause, volume, and historical
+  carrier-coverage views
+- Explore airport trends, active routes, cancellations, severe delays, and route drill-downs
+- Audit definitions, denominators, sample rules, source freshness, quality checks, and limitations
+- Use the responsive interface with a keyboard, screen reader, or reduced-motion preference
+
+<p align="center">
+  <img src="docs/images/arrival-atlas-route.png" width="72%" alt="Arrival Atlas route comparison with summary metrics and airline table" />
+  <img src="docs/images/arrival-atlas-mobile.png" width="24%" alt="Arrival Atlas mobile route search" />
+</p>
+
+## Data at a glance
 
 The current verified snapshot uses 65 official monthly BTS partitions.
 
@@ -42,24 +65,6 @@ The current verified snapshot uses 65 official monthly BTS partitions.
 Source rows and cleaned rows reconcile exactly in this snapshot; no duplicate stable flight keys
 were found. The pipeline flagged 24 impossible scheduled-duration values for audit rather than
 silently rewriting source delay fields.
-
-## Product experience
-
-- Route search by origin, destination, calendar month, and scheduled local departure band
-- Like-for-like airline table with scheduled flights, observation counts, on-time and
-  cancellation rates, median, P75, P90, and severe-delay rates
-- Deterministic written summary based only on calculated, sample-eligible metrics
-- Same-month current-versus-prior-year comparison
-- Monthly reliability, delay distribution, time-band, delay-cause, volume, and carrier-coverage
-  views
-- Airport trends, active routes, cancellation and severe-delay rates, time bands, and route
-  drill-down
-- Visible definitions, source freshness, inclusion rules, quality checks, and limitations
-- Loading, no-data, invalid-filter, small-sample, and failed-data states
-- Responsive keyboard-friendly interface, accessible SVG charts, tooltips, and reduced-motion
-  support
-
-![Arrival Atlas route comparison](docs/images/arrival-atlas-route.png)
 
 ## Architecture
 
@@ -178,6 +183,16 @@ small-sample, invalid-query, and network-error states; and desktop/mobile overfl
 `verify:production` targets `https://arrival-atlas.vercel.app` by default; set `LIVE_SITE_URL` to
 verify another deployment.
 
+## Contributing
+
+Focused contributions are welcome, especially fixes or improvements related to accessibility,
+documentation, data quality, metric correctness, tests, and the traveler-facing experience.
+
+Start with the [contribution guide](CONTRIBUTING.md). For a material metric, schema, or
+architecture change, [open an issue](https://github.com/heybadrinath/arrival-atlas/issues/new)
+before investing in an implementation. Pull requests run the frontend, pipeline, build, and
+browser suites in GitHub Actions.
+
 ## Automated monthly refresh
 
 `.github/workflows/data-refresh.yml` runs on the fifth day of each month and can also be dispatched
@@ -225,9 +240,8 @@ docs/                     architecture, metrics, pipeline, and deployment guides
 .github/workflows/        continuous integration and monthly data refresh
 ```
 
-## License and contributing
+## License and security
 
 Application and pipeline source are released under the [MIT License](LICENSE). The independently
-processed BTS data is marked US Public Domain with attribution and provenance retained. See
-[CONTRIBUTING.md](CONTRIBUTING.md) for focused change guidelines and [SECURITY.md](SECURITY.md) for
-responsible vulnerability reporting.
+processed BTS data is marked US Public Domain with attribution and provenance retained. Please
+follow the [security policy](SECURITY.md) when reporting a suspected vulnerability.
