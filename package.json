@@ -2,14 +2,9 @@
   "name": "arrival-atlas",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@10.28.1",
   "engines": {
-    "node": ">=20.9.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "postcss": "8.5.10"
-    }
+    "node": "24.x"
   },
   "scripts": {
     "dev": "next dev",

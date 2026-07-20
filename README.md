@@ -116,7 +116,7 @@ See [pipeline design and reconciliation rules](docs/DATA_PIPELINE.md) and the
 
 ## Local web setup
 
-Requirements: Node.js 20.9 or newer and pnpm 9.
+Requirements: Node.js 24 and pnpm 10.28.1.
 
 ```bash
 git clone https://github.com/heybadrinath/arrival-atlas.git
