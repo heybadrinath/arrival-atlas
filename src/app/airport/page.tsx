@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Airport explorer",
   description:
     "Explore historical route volume, cancellations, severe delays, and time-of-day performance from US airports.",
+  alternates: { canonical: "/airport" },
 };
 
 export default function AirportPage() {

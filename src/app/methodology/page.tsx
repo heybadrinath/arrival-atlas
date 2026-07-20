@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: "Methodology & data quality",
   description:
     "Metric formulas, BTS source lineage, inclusion rules, refresh status, data-quality checks, and limitations for Arrival Atlas.",
+  alternates: { canonical: "/methodology" },
 };
 
 const metrics = [

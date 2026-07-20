@@ -168,12 +168,15 @@ pnpm check
 pnpm build
 pnpm test:e2e
 pnpm links
+pnpm verify:production
 ```
 
 The suites cover metric denominators and exact quantiles; duplicate, cancellation, diversion,
 missing-cause, historical-code, invalid-duration, and current-partial-month handling; manifest and
 aggregate reconciliation; component behavior; route search; filter updates; tooltips; no-data,
 small-sample, invalid-query, and network-error states; and desktop/mobile overflow.
+`verify:production` targets `https://arrival-atlas.vercel.app` by default; set `LIVE_SITE_URL` to
+verify another deployment.
 
 ## Automated monthly refresh
 

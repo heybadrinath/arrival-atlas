@@ -46,6 +46,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Arrival Atlas contributors" }],
   creator: "Arrival Atlas contributors",
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     siteName: "Arrival Atlas",

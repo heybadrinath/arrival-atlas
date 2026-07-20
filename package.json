@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "verify:production": "node scripts/verify-production.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "links": "node scripts/check-links.mjs",

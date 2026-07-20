@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Route explorer",
   description:
     "Compare historical airline reliability, delay tails, cancellations, and time bands for a US domestic route.",
+  alternates: { canonical: "/route" },
 };
 
 export default function RoutePage() {
