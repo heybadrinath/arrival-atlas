@@ -19,8 +19,9 @@ eligible paid plan before that use begins. See [Vercel limits](https://vercel.co
 
 GitHub recommends keeping repositories below 1 GB and enforces a 100 MiB limit on individual
 regular Git objects. The current repository is roughly 125 MiB and every origin partition is far
-below the individual-file limit. The application uses GitHub's HTTPS raw-file surface, which was
-verified for byte ranges and cross-origin access. See [GitHub repository limits](https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits)
+below the individual-file limit. The application reads GitHub's HTTPS raw-file surface through a
+same-origin `/data` rewrite, avoiding a browser-level cross-origin dependency while retaining the
+public repository as the source. See [GitHub repository limits](https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits)
 and [large-file guidance](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github).
 
 Each versioned snapshot also increases Git history. Check repository size after every refresh and
@@ -33,7 +34,7 @@ the application can move by changing only `NEXT_PUBLIC_DATA_BASE_URL`.
 2. Add these Vercel environment variables for Production, Preview, and Development:
 
    ```text
-   NEXT_PUBLIC_DATA_BASE_URL=https://raw.githubusercontent.com/heybadrinath/arrival-atlas-data/main
+   NEXT_PUBLIC_DATA_BASE_URL=/data
    NEXT_PUBLIC_SITE_URL=https://arrival-atlas.vercel.app
    ```
 
@@ -64,6 +65,10 @@ Vercel deployment, attach its status to the commit, and record it in
 [GitHub Deployments](https://github.com/heybadrinath/arrival-atlas/deployments). Do not add a
 second GitHub Actions deployment job while the Git integration is active; it would create
 duplicate builds and require unnecessary Vercel credentials.
+
+Next.js proxies `/data/:path*` to the public aggregate repository. Keep
+`NEXT_PUBLIC_DATA_BASE_URL=/data` in Vercel so browsers use the application origin and Vercel
+forwards catalog, manifest, and Parquet requests to the public source.
 
 GitHub Releases record versioned source milestones but do not redeploy the application. A release
 tag must point to a `main` commit whose CI and Vercel deployment have already passed. See the

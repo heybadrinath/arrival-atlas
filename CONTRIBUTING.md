@@ -37,8 +37,8 @@ pnpm check
 pnpm build
 ```
 
-Run `pnpm test:e2e` after a current aggregate snapshot is available in `public/data` or after
-setting `NEXT_PUBLIC_DATA_BASE_URL` to the public dataset resolver.
+`pnpm test:e2e` uses the same-origin `/data` rewrite by default. A current aggregate snapshot in
+`public/data` takes precedence when testing unpublished data locally.
 
 ## Data changes
 

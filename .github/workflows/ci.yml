@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      NEXT_PUBLIC_DATA_BASE_URL: https://raw.githubusercontent.com/heybadrinath/arrival-atlas-data/main
+      NEXT_PUBLIC_DATA_BASE_URL: /data
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v7

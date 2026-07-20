@@ -111,4 +111,5 @@ DATASET_REPO=heybadrinath/arrival-atlas-data \
 
 The publisher replaces the active version directory in one Git commit, pushes it atomically, and
 downloads the public raw manifest to verify the version before returning success. Consumers use
-the HTTPS, CORS-enabled `raw.githubusercontent.com` URLs recorded by the manifest.
+the application's same-origin `/data` route, which rewrites manifest paths to the public
+`raw.githubusercontent.com` repository.

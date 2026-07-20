@@ -74,7 +74,11 @@ try {
         url: response.url(),
       };
       if (response.status() >= 400) badResponses.push(item);
-      if (response.url().includes("raw.githubusercontent.com")) {
+      const responseUrl = new URL(response.url());
+      if (
+        responseUrl.hostname === "raw.githubusercontent.com" ||
+        responseUrl.pathname.startsWith("/data/")
+      ) {
         dataResponses.push(item);
       }
     });
@@ -232,6 +236,16 @@ try {
           [200, 206].includes(response.status),
       ),
       "no public Parquet partition was loaded successfully",
+    );
+    assert.ok(
+      dataResponses.some((response) => {
+        const responseUrl = new URL(response.url);
+        return (
+          responseUrl.origin === canonicalHome &&
+          responseUrl.pathname.startsWith("/data/")
+        );
+      }),
+      "production data was not served through the same-origin data route",
     );
 
     report.push({

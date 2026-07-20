@@ -78,7 +78,8 @@ flowchart LR
   RAW --> CLEAN["Typed monthly Parquet"]
   CLEAN --> DUCK["DuckDB exact aggregates"]
   DUCK --> DATA["Versioned public Parquet dataset"]
-  DATA --> WEB["Next.js and hyparquet"]
+  DATA --> PROXY["Same-origin /data rewrite"]
+  PROXY --> WEB["Next.js and hyparquet"]
   GH["GitHub Actions monthly refresh"] --> BTS
   GH --> DATA
   GH --> VERCEL["Vercel deployment refresh"]
@@ -87,8 +88,8 @@ flowchart LR
 
 - **Frontend:** Next.js App Router, React, TypeScript, Tailwind CSS, ECharts, and `hyparquet`
 - **Pipeline:** Python 3.12, DuckDB, Zstandard-compressed Parquet, HTTP checksums, and Pytest
-- **Data delivery:** one browser-addressable file per origin and table; only selected-origin
-  partitions are fetched
+- **Data delivery:** one same-origin `/data` URL per origin and table, rewritten to the public
+  dataset repository; only selected-origin partitions are fetched
 - **Hosting:** Vercel Hobby plus public GitHub source and dataset repositories
 - **Recurring launch cost:** $0 for personal, non-commercial use within provider limits
 
@@ -152,7 +153,7 @@ cp .env.example .env.local
 Set the public aggregate resolver in `.env.local`:
 
 ```text
-NEXT_PUBLIC_DATA_BASE_URL=https://raw.githubusercontent.com/heybadrinath/arrival-atlas-data/main
+NEXT_PUBLIC_DATA_BASE_URL=/data
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
@@ -240,8 +241,9 @@ exact [deployment and rollback procedure](docs/DEPLOYMENT.md).
 - International, non-scheduled, and otherwise unreported flights are outside the source scope.
 - Airport metrics summarize flights departing the selected airport and their downstream arrival
   outcomes; they are not airport service-level measures.
-- High-volume origins can take several seconds to load cold from GitHub's free raw-file CDN; the
-  application keeps an explicit loading state and never falls back to unverified values.
+- High-volume origins can take several seconds to load cold from GitHub's free raw-file CDN behind
+  the same-origin `/data` route; the application keeps an explicit loading state and never falls
+  back to unverified values.
 - Versioned snapshot commits grow the dataset repository history. Monitor repository size and
   migrate the aggregates to object storage before approaching GitHub's recommended 1 GB ceiling.
 - Vercel Hobby is limited to personal, non-commercial use. A commercial launch requires an

@@ -23,5 +23,10 @@ All notable user-visible changes to Arrival Atlas are recorded here. The project
   dataset
 - GitHub Actions quality and browser checks with Vercel production deployment status
 
+### Fixed
+
+- Public catalog and Parquet requests now use a same-origin `/data` rewrite, avoiding
+  browser-specific cross-origin restrictions while retaining the public GitHub dataset
+
 [Unreleased]: https://github.com/heybadrinath/arrival-atlas/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/heybadrinath/arrival-atlas/releases/tag/v0.1.0
