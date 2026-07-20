@@ -1,36 +1,230 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Arrival Atlas
 
-## Getting Started
+[Live application](https://arrival-atlas.vercel.app) · [Public dataset](https://github.com/heybadrinath/arrival-atlas-data) · [Methodology](https://arrival-atlas.vercel.app/methodology)
 
-First, run the development server:
+Arrival Atlas is a public, historical flight-reliability explorer for US domestic routes. It
+helps a traveler compare the airlines that actually served a route in the same calendar month
+and departure-time window—without turning historical data into a prediction or an opaque score.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+![Arrival Atlas route search](docs/images/arrival-atlas-home.png)
+
+## Why this exists
+
+Airline-wide averages are weak evidence for a booking decision. Reliability changes by route,
+season, operating carrier, airport, and scheduled departure time. Arrival Atlas keeps that
+context visible, reports the observation count behind each number, and leaves small samples
+unranked.
+
+The product answers questions such as:
+
+> For LAX to SFO in December, which eligible airlines historically recorded fewer late arrivals,
+> and how did morning, afternoon, and evening departures differ?
+
+It does not forecast a specific flight. Current weather, schedules, staffing, and operations can
+make a future trip differ materially from the historical record.
+
+## Production snapshot
+
+The current verified snapshot uses 65 official monthly BTS partitions.
+
+| Property                      |                   Verified value |
+| ----------------------------- | -------------------------------: |
+| Coverage                      |            January 2021–May 2026 |
+| Latest complete source month  |                         May 2026 |
+| Cleaned scheduled-flight rows |                       36,533,897 |
+| Arrival-delay observations    |                       35,805,791 |
+| Aggregate rows                |                        4,556,244 |
+| Aggregate Parquet files       |                            2,667 |
+| Aggregate payload             |    131,053,164 bytes (125.0 MiB) |
+| Airports / directional routes |                      382 / 8,434 |
+| Ranking minimum               | 100 observed arrivals per cohort |
+
+Source rows and cleaned rows reconcile exactly in this snapshot; no duplicate stable flight keys
+were found. The pipeline flagged 24 impossible scheduled-duration values for audit rather than
+silently rewriting source delay fields.
+
+## Product experience
+
+- Route search by origin, destination, calendar month, and scheduled local departure band
+- Like-for-like airline table with scheduled flights, observation counts, on-time and
+  cancellation rates, median, P75, P90, and severe-delay rates
+- Deterministic written summary based only on calculated, sample-eligible metrics
+- Same-month current-versus-prior-year comparison
+- Monthly reliability, delay distribution, time-band, delay-cause, volume, and carrier-coverage
+  views
+- Airport trends, active routes, cancellation and severe-delay rates, time bands, and route
+  drill-down
+- Visible definitions, source freshness, inclusion rules, quality checks, and limitations
+- Loading, no-data, invalid-filter, small-sample, and failed-data states
+- Responsive keyboard-friendly interface, accessible SVG charts, tooltips, and reduced-motion
+  support
+
+![Arrival Atlas route comparison](docs/images/arrival-atlas-route.png)
+
+## Architecture
+
+The expensive work happens offline. The public application has no database and never sends raw
+flight rows to a browser.
+
+```mermaid
+flowchart LR
+  BTS["Official BTS monthly ZIPs"] --> RAW["Checksum-aware raw layer"]
+  RAW --> CLEAN["Typed monthly Parquet"]
+  CLEAN --> DUCK["DuckDB exact aggregates"]
+  DUCK --> DATA["Versioned public Parquet dataset"]
+  DATA --> WEB["Next.js and hyparquet"]
+  GH["GitHub Actions monthly refresh"] --> BTS
+  GH --> DATA
+  GH --> VERCEL["Vercel deployment refresh"]
+  VERCEL --> WEB
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Frontend:** Next.js App Router, React, TypeScript, Tailwind CSS, ECharts, and `hyparquet`
+- **Pipeline:** Python 3.12, DuckDB, Zstandard-compressed Parquet, HTTP checksums, and Pytest
+- **Data delivery:** one browser-addressable file per origin and table; only selected-origin
+  partitions are fetched
+- **Hosting:** Vercel Hobby plus public GitHub source and dataset repositories
+- **Recurring launch cost:** $0 for personal, non-commercial use within provider limits
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+See [the detailed architecture](docs/ARCHITECTURE.md) and [deployment notes](docs/DEPLOYMENT.md).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Metric design
 
-## Learn More
+Arrival Atlas follows the BTS definition of on time: an observed arrival with `ArrDelay < 15`
+minutes. Cancelled and diverted flights are excluded from delay percentiles and are never assigned
+a zero-minute delay.
 
-To learn more about Next.js, take a look at the following resources:
+Rates are published as numerator and denominator counts so they can be audited or recalculated.
+Median, P75, and P90 are exact continuous quantiles calculated from the selected flight cohort;
+the `All` time-band percentile is not an average of subgroup percentiles.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See [all formulas and denominators](docs/METRICS.md).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data source and lineage
 
-## Deploy on Vercel
+The source of record is the US Bureau of Transportation Statistics
+[Reporting Carrier On-Time Performance table](https://www.transtats.bts.gov/TableInfo.asp?QO_fu146_anzr=b0-gvzr&gnoyr_VQ=FGJ).
+Monthly files come from the official [TranStats download interface](https://www.transtats.bts.gov/DL_SelectFields.aspx?QO_fu146_anzr=b0-gvzr&gnoyr_VQ=FGJ).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+For each source partition the local raw manifest records its URL, download time, ETag, source
+modification date, byte count, and SHA-256 checksum. Raw ZIPs and cleaned flight rows stay outside
+Git. The public dataset contains only application-ready aggregates, a manifest, checksums, and a
+compact browser catalog plus a dataset card.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [pipeline design and reconciliation rules](docs/DATA_PIPELINE.md) and the
+[public dataset card](https://github.com/heybadrinath/arrival-atlas-data).
+
+## Local web setup
+
+Requirements: Node.js 20.9 or newer and pnpm 9.
+
+```bash
+git clone https://github.com/heybadrinath/arrival-atlas.git
+cd arrival-atlas
+pnpm install --frozen-lockfile
+cp .env.example .env.local
+```
+
+Set the public aggregate resolver in `.env.local`:
+
+```text
+NEXT_PUBLIC_DATA_BASE_URL=https://raw.githubusercontent.com/heybadrinath/arrival-atlas-data/main
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+Then run:
+
+```bash
+pnpm dev
+```
+
+Open `http://localhost:3000`. No credential is needed to read the public dataset.
+
+## Rebuild the data
+
+Requirements: Python 3.12, `uv`, and roughly 4 GB of free working storage for the current scope.
+
+```bash
+uv sync --frozen --dev
+uv run arrival-data discover
+uv run arrival-data refresh --start 2021-01
+```
+
+For the exact published cutoff:
+
+```bash
+uv run arrival-data refresh --start 2021-01 --through 2026-05
+```
+
+The refresh creates reproducible raw, cleaned, and application-ready layers under `data/`, copies
+the current aggregate snapshot to ignored `public/data/` for local use, and stops on source schema
+drift or failed quality checks. It downloads only missing or changed monthly partitions unless
+`--force` is explicitly supplied.
+
+## Tests and verification
+
+```bash
+pnpm check
+pnpm build
+pnpm test:e2e
+pnpm links
+```
+
+The suites cover metric denominators and exact quantiles; duplicate, cancellation, diversion,
+missing-cause, historical-code, invalid-duration, and current-partial-month handling; manifest and
+aggregate reconciliation; component behavior; route search; filter updates; tooltips; no-data,
+small-sample, invalid-query, and network-error states; and desktop/mobile overflow.
+
+## Automated monthly refresh
+
+`.github/workflows/data-refresh.yml` runs on the fifth day of each month and can also be dispatched
+manually. It:
+
+1. discovers the latest complete official month;
+2. restores cached raw and cleaned partitions;
+3. downloads and transforms only missing or changed partitions;
+4. rejects schema drift and quality failures;
+5. rebuilds versioned origin aggregates;
+6. publishes and re-downloads the dataset manifest for verification; and
+7. commits the new freshness manifest, triggering the connected Vercel deployment.
+
+Repository maintainers need one repository-scoped `DATA_REPO_DEPLOY_KEY` Actions secret. See the
+exact [deployment and rollback procedure](docs/DEPLOYMENT.md).
+
+## Known limitations
+
+- Historical descriptive performance is not a forecast or guarantee.
+- BTS reporting-carrier records can differ from the marketing airline shown during booking.
+- Carrier and airport labels change; stable DOT and airport IDs are retained alongside historical
+  codes, but display names are maintained reference data.
+- Delay-cause minutes are available only for qualifying delays and do not explain every late
+  arrival.
+- Current-year coverage stops at the latest complete published month.
+- International, non-scheduled, and otherwise unreported flights are outside the source scope.
+- Airport metrics summarize flights departing the selected airport and their downstream arrival
+  outcomes; they are not airport service-level measures.
+- High-volume origins can take several seconds to load cold from GitHub's free raw-file CDN; the
+  application keeps an explicit loading state and never falls back to unverified values.
+- Versioned snapshot commits grow the dataset repository history. Monitor repository size and
+  migrate the aggregates to object storage before approaching GitHub's recommended 1 GB ceiling.
+- Vercel Hobby is limited to personal, non-commercial use. A commercial launch requires an
+  eligible plan or a different host.
+
+## Repository map
+
+```text
+pipeline/                 source download, transform, aggregate, validation
+src/app/                  product routes, metadata, methodology
+src/components/           reusable UI, charts, route and airport explorers
+src/lib/                  typed manifest and Parquet loading
+tests/                    Python, component, and browser tests
+docs/                     architecture, metrics, pipeline, and deployment guides
+.github/workflows/        continuous integration and monthly data refresh
+```
+
+## License and contributing
+
+Application and pipeline source are released under the [MIT License](LICENSE). The independently
+processed BTS data is marked US Public Domain with attribution and provenance retained. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for focused change guidelines and [SECURITY.md](SECURITY.md) for
+responsible vulnerability reporting.

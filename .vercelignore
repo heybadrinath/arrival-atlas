@@ -1,0 +1,13 @@
+.venv
+data
+public/data
+coverage
+playwright-report
+test-results
+docs
+pipeline
+tests
+.github
+pyproject.toml
+uv.lock
+scripts

@@ -2,25 +2,64 @@
   "name": "arrival-atlas",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "8.5.10"
+    }
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "links": "node scripts/check-links.mjs",
+    "data:discover": "uv run arrival-data discover",
+    "data:refresh": "uv run arrival-data refresh",
+    "data:test": "uv run pytest",
+    "data:lint": "uv run ruff check pipeline tests",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm data:lint && pnpm data:test"
   },
   "dependencies": {
+    "@radix-ui/react-tooltip": "^1.2.13",
+    "clsx": "^2.1.1",
+    "echarts": "^6.1.0",
+    "echarts-for-react": "^3.0.6",
+    "hyparquet": "^1.26.2",
+    "hyparquet-compressors": "^1.1.1",
+    "lucide-react": "^1.25.0",
     "next": "16.2.10",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vercel/config": "^0.5.5",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.5",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

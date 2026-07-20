@@ -1,0 +1,98 @@
+name: Refresh BTS data
+
+on:
+  schedule:
+    - cron: "17 11 5 * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Redownload and rebuild every partition
+        type: boolean
+        default: false
+
+concurrency:
+  group: bts-data-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      DATASET_REPO: heybadrinath/arrival-atlas-data
+      DATA_REPO_DEPLOY_KEY: ${{ secrets.DATA_REPO_DEPLOY_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v8
+        with:
+          version: "0.11.17"
+          enable-cache: true
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install pipeline dependencies
+        run: uv sync --frozen --dev
+
+      - name: Discover latest complete partition
+        id: latest
+        run: echo "month=$(uv run arrival-data discover)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        with:
+          path: |
+            data/raw
+            data/cleaned
+          key: bts-v1-${{ runner.os }}-${{ steps.latest.outputs.month }}
+          restore-keys: |
+            bts-v1-${{ runner.os }}-
+
+      - name: Require publication credential
+        run: |
+          if [ -z "$DATA_REPO_DEPLOY_KEY" ]; then
+            echo "DATA_REPO_DEPLOY_KEY is required to publish the refreshed dataset" >&2
+            exit 1
+          fi
+
+      - name: Configure dataset deploy key
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DATA_REPO_DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+
+      - name: Refresh official partitions and aggregates
+        run: |
+          force_flag=""
+          if [ "${{ inputs.force }}" = "true" ]; then force_flag="--force"; fi
+          uv run arrival-data refresh --through "${{ steps.latest.outputs.month }}" $force_flag
+
+      - name: Run pipeline tests and lint
+        run: |
+          uv run ruff check pipeline tests scripts/publish_dataset.py
+          uv run pytest
+
+      - name: Publish and verify one versioned dataset commit
+        run: uv run python scripts/publish_dataset.py
+
+      - name: Record application freshness
+        run: |
+          mkdir -p public
+          cp data/processed/manifest.json public/data-version.json
+          git config user.name "arrival-atlas-data"
+          git config user.email "arrival-atlas-data@users.noreply.github.com"
+          git add public/data-version.json
+          if git diff --cached --quiet; then
+            echo "Freshness manifest already current"
+          else
+            git commit -m "data: publish ${{ steps.latest.outputs.month }} refresh"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin HEAD:"$GITHUB_REF_NAME"
+          fi

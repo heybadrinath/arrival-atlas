@@ -1,0 +1,39 @@
+[project]
+name = "arrival-atlas-data"
+version = "0.1.0"
+description = "Reproducible BTS on-time performance pipeline for Arrival Atlas"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "duckdb>=1.4.0,<2",
+  "httpx>=0.28.1,<1",
+  "pyarrow>=21.0.0,<24",
+]
+
+[project.scripts]
+arrival-data = "pipeline.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pipeline"]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4.0,<10",
+  "pytest-cov>=6.2.0,<8",
+  "ruff>=0.12.0,<1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
