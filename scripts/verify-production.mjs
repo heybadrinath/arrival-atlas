@@ -151,6 +151,16 @@ try {
         .count(),
       0,
     );
+    const timeBandChartText = await page
+      .getByRole("img", {
+        name: "On-time arrival rate by departure time band",
+      })
+      .innerText();
+    assert.doesNotMatch(
+      timeBandChartText,
+      /\d+\.\d{2,}%/,
+      "departure-time labels must be rounded to one decimal place",
+    );
     const routeOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth + 1,
     );

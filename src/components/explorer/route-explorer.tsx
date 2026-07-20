@@ -441,8 +441,17 @@ function RouteResults({
           percentiles.
         </DataNotice>
 
+        <p className="mt-4 text-xs text-muted sm:hidden">
+          Swipe the table to compare every metric →
+        </p>
+
         <Card className="mt-5 overflow-hidden">
-          <div className="overflow-x-auto">
+          <div
+            className="overflow-x-auto"
+            role="region"
+            aria-label="Scrollable airline comparison table"
+            tabIndex={0}
+          >
             <table className="w-full min-w-[1020px] border-collapse text-left text-sm">
               <thead className="bg-paper-deep/65 text-[0.68rem] tracking-[0.08em] text-muted uppercase">
                 <tr>
@@ -861,7 +870,7 @@ function TimeBandComparison({
     .map((band) => rows.find((row) => row.departure_time_band === band))
     .filter(Boolean) as MetricRow[];
   const option: EChartsOption = {
-    grid: { left: 94, right: 22, top: 20, bottom: 38 },
+    grid: { left: 94, right: 48, top: 20, bottom: 38 },
     tooltip: {
       trigger: "axis",
       confine: true,
@@ -895,7 +904,7 @@ function TimeBandComparison({
         label: {
           show: true,
           position: "right",
-          formatter: "{c}%",
+          formatter: (params) => percentText(Number(params.value)),
           color: CHART_COLORS.ink,
           fontSize: 10,
         },
