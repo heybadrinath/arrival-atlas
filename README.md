@@ -1,10 +1,11 @@
 # Arrival Atlas
 
 [![CI](https://github.com/heybadrinath/arrival-atlas/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/heybadrinath/arrival-atlas/actions/workflows/ci.yml)
-[![Live application](https://img.shields.io/badge/live-arrival--atlas.vercel.app-ef6f61)](https://arrival-atlas.vercel.app)
+[![Latest release](https://img.shields.io/github/v/release/heybadrinath/arrival-atlas?display_name=tag)](https://github.com/heybadrinath/arrival-atlas/releases/latest)
+[![Production deployment](https://img.shields.io/badge/deployment-Vercel-000000?logo=vercel)](https://github.com/heybadrinath/arrival-atlas/deployments)
 [![MIT License](https://img.shields.io/badge/license-MIT-0f766e)](LICENSE)
 
-[Explore the live product](https://arrival-atlas.vercel.app) · [Browse the public dataset](https://github.com/heybadrinath/arrival-atlas-data) · [Read the methodology](https://arrival-atlas.vercel.app/methodology) · [Contribute](CONTRIBUTING.md)
+[Explore the live product](https://arrival-atlas.vercel.app) · [View releases](https://github.com/heybadrinath/arrival-atlas/releases) · [Browse the public dataset](https://github.com/heybadrinath/arrival-atlas-data) · [Read the methodology](https://arrival-atlas.vercel.app/methodology) · [Contribute](CONTRIBUTING.md)
 
 Arrival Atlas is a public, historical flight-reliability explorer for US domestic routes. It
 helps a traveler compare the airlines that actually served a route in the same calendar month
@@ -92,6 +93,24 @@ flowchart LR
 - **Recurring launch cost:** $0 for personal, non-commercial use within provider limits
 
 See [the detailed architecture](docs/ARCHITECTURE.md) and [deployment notes](docs/DEPLOYMENT.md).
+
+## Releases and deployment
+
+Source releases and production deployments are deliberately separate, visible histories:
+
+| History                | What it records                                 | Where to inspect                                                                |
+| ---------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| GitHub Releases        | Versioned, documented source milestones         | [Latest release](https://github.com/heybadrinath/arrival-atlas/releases/latest) |
+| GitHub Deployments     | Vercel deployment status for an exact commit    | [Deployment history](https://github.com/heybadrinath/arrival-atlas/deployments) |
+| Production application | The current deployment behind the canonical URL | [arrival-atlas.vercel.app](https://arrival-atlas.vercel.app)                    |
+
+Every push to `main` is deployed by the existing Vercel Git integration. A semantic version tag
+such as `v0.1.0` runs [the release workflow](.github/workflows/release.yml), which validates the
+tag against `package.json` and publishes its checked-in release notes. Creating a release does not
+start a second deployment pipeline or require duplicate Vercel credentials.
+
+See [the release runbook](docs/RELEASES.md), [changelog](CHANGELOG.md), and
+[deployment and rollback guide](docs/DEPLOYMENT.md).
 
 ## Metric design
 
@@ -236,8 +255,9 @@ src/app/                  product routes, metadata, methodology
 src/components/           reusable UI, charts, route and airport explorers
 src/lib/                  typed manifest and Parquet loading
 tests/                    Python, component, and browser tests
-docs/                     architecture, metrics, pipeline, and deployment guides
-.github/workflows/        continuous integration and monthly data refresh
+docs/                     architecture, metrics, pipeline, release, and deployment guides
+.github/workflows/        continuous integration, releases, and monthly data refresh
+CHANGELOG.md              versioned record of user-visible changes
 ```
 
 ## License and security

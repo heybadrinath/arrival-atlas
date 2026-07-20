@@ -47,8 +47,27 @@ the application can move by changing only `NEXT_PUBLIC_DATA_BASE_URL`.
    filters, charts, tooltips, empty/invalid states, source links, network requests, console, and
    page metadata.
 
-The local machine may have an older global Vercel CLI. Using `pnpm dlx vercel@latest` avoids a
-global change and ensures support for `vercel.ts`.
+If Vercel CLI is installed globally, keep it current before a manual deployment:
+
+```bash
+npm i -g vercel@latest
+vercel --version
+```
+
+`pnpm dlx vercel@latest` remains a suitable one-off alternative when a global install is
+undesirable. CI should pin an exact CLI version if a CLI-driven deployment is ever introduced.
+
+## Deployment and release visibility
+
+The linked Vercel project is the only production deployment pipeline. Pushes to `main` create a
+Vercel deployment, attach its status to the commit, and record it in
+[GitHub Deployments](https://github.com/heybadrinath/arrival-atlas/deployments). Do not add a
+second GitHub Actions deployment job while the Git integration is active; it would create
+duplicate builds and require unnecessary Vercel credentials.
+
+GitHub Releases record versioned source milestones but do not redeploy the application. A release
+tag must point to a `main` commit whose CI and Vercel deployment have already passed. See the
+[release runbook](RELEASES.md) for the exact publication and verification sequence.
 
 ## Scheduled refresh
 

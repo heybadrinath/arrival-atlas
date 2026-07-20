@@ -24,6 +24,10 @@ documentation, and the traveler-facing experience.
 For web-only work, follow the [local setup](README.md#local-web-setup). Pipeline changes also need
 Python 3.12 and `uv`.
 
+Add a short entry under [`Unreleased`](CHANGELOG.md#unreleased) when a change affects users,
+published metrics, data coverage, or operating requirements. Maintainers own version tags and
+GitHub Release publication.
+
 ## Local checks
 
 ```bash

@@ -11,6 +11,7 @@
 - [ ] I ran the checks relevant to this change.
 - [ ] I added or updated tests when behavior changed.
 - [ ] I included a screenshot for a visible interface change.
+- [ ] I updated `CHANGELOG.md` for a user-visible change.
 
 ## Notes
 
