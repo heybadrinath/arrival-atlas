@@ -22,6 +22,18 @@ const viewports = [
   },
 ];
 
+async function chooseOption(page, controlName, optionName, search) {
+  await page.getByRole("button", { name: controlName, exact: true }).click();
+  if (search) {
+    await page
+      .getByRole("searchbox", {
+        name: `Search ${controlName.toLowerCase()}`,
+      })
+      .fill(search);
+  }
+  await page.getByRole("option", { name: optionName, exact: true }).click();
+}
+
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch();
 const report = [];
@@ -79,8 +91,18 @@ try {
       .getByText("Official BTS records", { exact: false })
       .first()
       .waitFor({ timeout: 30_000 });
-    await page.getByLabel("Origin airport").selectOption("LAX");
-    await page.getByLabel("Destination airport").selectOption("SFO");
+    await chooseOption(
+      page,
+      "Origin airport",
+      "LAX — Los Angeles, CA",
+      "Los Angeles",
+    );
+    await chooseOption(
+      page,
+      "Destination airport",
+      "SFO — San Francisco, CA",
+      "San Francisco",
+    );
     assert.equal(
       await page.getByRole("button", { name: "Explore route" }).isEnabled(),
       true,
@@ -136,7 +158,7 @@ try {
       /less than 15 minutes/,
     );
 
-    await page.getByLabel("Travel month").selectOption("12");
+    await chooseOption(page, "Travel month", "December");
     await page.getByRole("button", { name: "Explore route" }).click();
     await page.waitForURL(/month=12/);
     await page.getByText("December · Any departure time").waitFor();

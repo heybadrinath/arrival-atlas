@@ -1,18 +1,17 @@
 "use client";
 
 import type { EChartsOption } from "echarts";
-import { ArrowRight, Building2 } from "lucide-react";
+import { ArrowRight, Building2, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useTransition } from "react";
 
 import { Chart, CHART_COLORS } from "@/components/charts/chart";
 import { ChartCard } from "@/components/charts/chart-card";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataNotice } from "@/components/ui/data-notice";
 import { MetricHelp } from "@/components/ui/metric-help";
-import { SelectField } from "@/components/ui/select-field";
+import { SelectField, type SelectOption } from "@/components/ui/select-field";
 import {
   EmptyPanel,
   ErrorPanel,
@@ -35,6 +34,11 @@ const AIRPORT_TABLES = [
   "airport_routes",
 ];
 
+const MONTH_OPTIONS: SelectOption[] = MONTHS.map((label, index) => ({
+  value: String(index + 1),
+  label,
+}));
+
 function onTimeRate(row: MetricRow) {
   return percent(row.on_time_arrivals, row.observations);
 }
@@ -50,6 +54,7 @@ function severeRate(row: MetricRow) {
 export function AirportExplorer() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   const manifestState = useManifest();
   const manifest =
     manifestState.status === "ready" ? manifestState.data : undefined;
@@ -68,6 +73,29 @@ export function AirportExplorer() {
       : Number(manifest?.coverage.latest_complete_month.slice(5) ?? 1);
   const tablesState = useOriginTables(manifest, code, AIRPORT_TABLES);
   const airport = manifest?.airports.find((item) => item.code === code);
+  const airportByCode = useMemo(
+    () =>
+      new Map(
+        manifest?.airports.map((airportItem) => [
+          airportItem.code,
+          airportItem,
+        ]) ?? [],
+      ),
+    [manifest],
+  );
+  const airportOptions = useMemo<SelectOption[]>(
+    () =>
+      Object.keys(manifest?.tables.airport_period.partitions ?? {})
+        .sort()
+        .map((airportCode) => ({
+          value: airportCode,
+          code: airportCode,
+          label: airportByCode.get(airportCode)?.city_name ?? "US airport",
+          keywords: airportByCode.get(airportCode)?.state,
+          meta: `${manifest?.routes[airportCode]?.length ?? 0} routes`,
+        })),
+    [airportByCode, manifest],
+  );
   const invalidQuery =
     (!!requestedCode && !validCode) ||
     (!!searchParams.get("month") &&
@@ -92,7 +120,9 @@ export function AirportExplorer() {
   }, [month, tablesState]);
 
   function navigate(nextCode: string, nextMonth: number) {
-    router.push(`/airport?code=${nextCode}&month=${nextMonth}`);
+    startTransition(() =>
+      router.push(`/airport?code=${nextCode}&month=${nextMonth}`),
+    );
   }
 
   if (manifestState.status === "error") {
@@ -116,54 +146,48 @@ export function AirportExplorer() {
             </h1>
             <p className="mt-4 max-w-2xl text-lg text-white/72">
               {airport?.city_name ?? "Choose a US airport"}
-              {airport?.state ? ` · ${airport.state}` : ""}
             </p>
           </div>
           <Card className="border-white/12 bg-white/[0.06] p-5 shadow-none">
-            <div className="grid gap-3 sm:grid-cols-[1fr_0.72fr_auto] sm:items-end">
+            <div className="grid gap-3 sm:grid-cols-[1.25fr_0.75fr] sm:items-end">
               <SelectField
                 label="Airport"
                 value={code ?? ""}
-                onChange={(event) => navigate(event.target.value, month)}
-                disabled={!manifest}
-                className="[&_span:first-child]:text-white/58"
-              >
-                {Object.keys(manifest?.tables.airport_period.partitions ?? {})
-                  .sort()
-                  .map((airportCode) => (
-                    <option key={airportCode} value={airportCode}>
-                      {airportCode} —{" "}
-                      {
-                        manifest?.airports.find(
-                          (item) => item.code === airportCode,
-                        )?.city_name
-                      }
-                    </option>
-                  ))}
-              </SelectField>
+                options={airportOptions}
+                onValueChange={(value) => navigate(value, month)}
+                disabled={!manifest || isPending}
+                dark
+                searchable
+                searchPlaceholder="Airport code or city"
+                emptyText="No airports match that search"
+                placeholder={manifest ? "Choose airport" : "Loading airports…"}
+                menuWidth="wide"
+              />
               <SelectField
                 label="Calendar month"
-                value={month}
-                onChange={(event) =>
-                  navigate(code!, Number(event.target.value))
-                }
-                disabled={!manifest || !code}
-                className="[&_span:first-child]:text-white/58"
-              >
-                {MONTHS.map((name, index) => (
-                  <option key={name} value={index + 1}>
-                    {name}
-                  </option>
-                ))}
-              </SelectField>
-              <Button
-                type="button"
-                onClick={() => navigate(code!, month)}
-                disabled={!code}
-              >
-                View
-              </Button>
+                value={String(month)}
+                options={MONTH_OPTIONS}
+                onValueChange={(value) => navigate(code!, Number(value))}
+                disabled={!manifest || !code || isPending}
+                dark
+                columns={2}
+                menuAlign="end"
+                menuWidth="wide"
+              />
             </div>
+            <p
+              className="mt-3 flex min-h-4 items-center gap-1.5 text-[0.7rem] text-white/55"
+              aria-live="polite"
+            >
+              {isPending ? (
+                <>
+                  <LoaderCircle className="size-3.5 animate-spin" /> Updating
+                  the airport readout…
+                </>
+              ) : (
+                "Choose an airport or month to update the readout."
+              )}
+            </p>
           </Card>
         </div>
       </section>

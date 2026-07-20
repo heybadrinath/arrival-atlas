@@ -8,7 +8,11 @@ export function LoadingPanel({
   label?: string;
 }) {
   return (
-    <Card className="flex min-h-64 flex-col items-center justify-center p-8 text-center">
+    <Card
+      className="flex min-h-64 flex-col items-center justify-center p-8 text-center"
+      role="status"
+      aria-live="polite"
+    >
       <LoaderCircle
         className="size-7 animate-spin text-teal"
         aria-hidden="true"

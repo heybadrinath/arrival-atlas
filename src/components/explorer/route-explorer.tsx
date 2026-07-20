@@ -5,21 +5,23 @@ import {
   ArrowDown,
   ArrowUp,
   CalendarClock,
-  Filter,
   Gauge,
   PlaneLanding,
   Route,
 } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Chart, CHART_COLORS } from "@/components/charts/chart";
 import { ChartCard } from "@/components/charts/chart-card";
+import { CopyRouteLink } from "@/components/copy-route-link";
 import { RouteRibbon } from "@/components/route-ribbon";
 import { RouteSearch } from "@/components/route-search";
 import { Card } from "@/components/ui/card";
 import { DataNotice } from "@/components/ui/data-notice";
 import { MetricHelp } from "@/components/ui/metric-help";
+import { SelectField, type SelectOption } from "@/components/ui/select-field";
 import {
   EmptyPanel,
   ErrorPanel,
@@ -48,6 +50,29 @@ const CORE_TABLES = [
 const AIRLINE_COVERAGE_TABLES = ["route_airline_period"];
 
 type SortKey = "onTime" | "cancellation" | "p90" | "sample";
+
+const SORT_OPTIONS: SelectOption[] = [
+  {
+    value: "onTime",
+    label: "On-time rate",
+    detail: "Highest first",
+  },
+  {
+    value: "cancellation",
+    label: "Cancellation rate",
+    detail: "Lowest first",
+  },
+  {
+    value: "p90",
+    label: "90th-percentile delay",
+    detail: "Lowest first",
+  },
+  {
+    value: "sample",
+    label: "Observation count",
+    detail: "Largest sample first",
+  },
+];
 
 function onTimeRate(row: MetricRow): number | null {
   return percent(row.on_time_arrivals, row.observations);
@@ -225,6 +250,7 @@ export function RouteExplorer() {
           )}
           <div className="mt-8 rounded-2xl border border-white/12 bg-white/[0.055] p-4 sm:p-5">
             <RouteSearch
+              key={`${origin}-${destination}-${month}-${band}`}
               compact
               dark
               initialOrigin={origin}
@@ -245,7 +271,13 @@ export function RouteExplorer() {
         ) : null}
 
         {!manifest || tablesState.status === "loading" ? (
-          <LoadingPanel />
+          <LoadingPanel
+            label={
+              origin && destination
+                ? `Loading ${origin} → ${destination} history…`
+                : "Loading flight records…"
+            }
+          />
         ) : tablesState.status === "error" ? (
           <ErrorPanel error={tablesState.error} />
         ) : !derived?.routeSummary ? (
@@ -342,12 +374,20 @@ function RouteResults({
               observations exclude cancelled and diverted flights.
             </p>
           </div>
-          <a
-            href={`/airport?code=${origin}&month=${month}`}
-            className="inline-flex items-center gap-2 text-sm font-bold text-teal hover:underline"
-          >
-            Explore {origin} airport <Route className="size-4" />
-          </a>
+          <div className="flex flex-wrap items-center gap-3">
+            <CopyRouteLink
+              origin={origin}
+              destination={destination}
+              month={month}
+              band={band}
+            />
+            <Link
+              href={`/airport?code=${origin}&month=${month}`}
+              className="inline-flex min-h-10 items-center gap-2 px-1 text-sm font-bold text-teal hover:underline"
+            >
+              Explore {origin} airport <Route className="size-4" />
+            </Link>
+          </div>
         </div>
 
         <Card className="mt-6 overflow-hidden">
@@ -407,21 +447,16 @@ function RouteResults({
             </h2>
           </div>
           <div className="flex flex-wrap items-end gap-3">
-            <label className="text-xs font-bold tracking-[0.08em] text-muted uppercase">
-              <span className="mb-1.5 flex items-center gap-1.5">
-                <Filter className="size-3.5" /> Sort by
-              </span>
-              <select
-                value={sortKey}
-                onChange={(event) => setSortKey(event.target.value as SortKey)}
-                className="h-10 rounded-lg border border-ink/15 bg-surface px-3 text-sm font-semibold tracking-normal text-ink normal-case"
-              >
-                <option value="onTime">On-time rate</option>
-                <option value="cancellation">Cancellation rate</option>
-                <option value="p90">90th-percentile delay</option>
-                <option value="sample">Observation count</option>
-              </select>
-            </label>
+            <SelectField
+              label="Sort airlines by"
+              ariaLabel="Sort airlines by"
+              value={sortKey}
+              options={SORT_OPTIONS}
+              onValueChange={(value) => setSortKey(value as SortKey)}
+              className="w-48"
+              menuAlign="end"
+              menuWidth="wide"
+            />
             <label className="flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-ink/15 bg-surface px-3 text-sm font-semibold">
               <input
                 type="checkbox"
